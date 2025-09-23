@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sql2sparql"
+version = "1.0.0"
+description = "Automatic SQL to SPARQL converter for direct RDF querying"
+authors = [
+    {name = "SQL2SPARQL Team", email = "contact@sql2sparql.org"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+dependencies = [
+    "rdflib>=6.0.0",
+    "SPARQLWrapper>=2.0.0",
+    "sqlparse>=0.4.0",
+    "click>=8.0.0",
+    "pydantic>=2.0.0",
+    "requests>=2.28.0",
+    "rich>=13.0.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0"
+]
+
+[project.scripts]
+sql2sparql = "sql2sparql.cli.main:cli"
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "flake8>=5.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sql2sparql*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

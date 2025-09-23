@@ -1,0 +1,164 @@
+@prefix : <http://example.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ont: <http://example.org/ontology/> .
+@prefix types: <http://example.org/types/> .
+
+# Clients
+:client1 a types:Client ;
+    ont:id "1"^^xsd:integer ;
+    ont:name "John Doe" ;
+    ont:email "john.doe@example.com" ;
+    ont:age 35 ;
+    ont:registration_date "2023-01-15"^^xsd:date ;
+    ont:status "active" .
+
+:client2 a types:Client ;
+    ont:id "2"^^xsd:integer ;
+    ont:name "Jane Smith" ;
+    ont:email "jane.smith@example.com" ;
+    ont:age 28 ;
+    ont:registration_date "2023-02-20"^^xsd:date ;
+    ont:status "active" .
+
+:client3 a types:Client ;
+    ont:id "3"^^xsd:integer ;
+    ont:name "Bob Johnson" ;
+    ont:email "bob.johnson@example.com" ;
+    ont:age 42 ;
+    ont:registration_date "2023-03-10"^^xsd:date ;
+    ont:status "inactive" .
+
+# Products
+:product1 a types:Product ;
+    ont:id "101"^^xsd:integer ;
+    ont:name "Laptop Pro" ;
+    ont:category "Electronics" ;
+    ont:price 1299.99 ;
+    ont:stock 15 ;
+    ont:description "High-performance laptop" .
+
+:product2 a types:Product ;
+    ont:id "102"^^xsd:integer ;
+    ont:name "Wireless Mouse" ;
+    ont:category "Electronics" ;
+    ont:price 29.99 ;
+    ont:stock 50 ;
+    ont:description "Ergonomic wireless mouse" .
+
+:product3 a types:Product ;
+    ont:id "103"^^xsd:integer ;
+    ont:name "Office Chair" ;
+    ont:category "Furniture" ;
+    ont:price 249.99 ;
+    ont:stock 20 ;
+    ont:description "Comfortable office chair" .
+
+:product4 a types:Product ;
+    ont:id "104"^^xsd:integer ;
+    ont:name "Standing Desk" ;
+    ont:category "Furniture" ;
+    ont:price 599.99 ;
+    ont:stock 10 ;
+    ont:description "Adjustable standing desk" .
+
+:product5 a types:Product ;
+    ont:id "105"^^xsd:integer ;
+    ont:name "Python Programming Book" ;
+    ont:category "Books" ;
+    ont:price 45.00 ;
+    ont:stock 30 ;
+    ont:description "Learn Python programming" .
+
+# Orders
+:order1 a types:Order ;
+    ont:id "1001"^^xsd:integer ;
+    ont:date "2024-01-15"^^xsd:date ;
+    ont:total 1329.98 ;
+    ont:status "completed" ;
+    ont:client_id :client1 .
+
+:order2 a types:Order ;
+    ont:id "1002"^^xsd:integer ;
+    ont:date "2024-01-20"^^xsd:date ;
+    ont:total 279.98 ;
+    ont:status "completed" ;
+    ont:client_id :client2 .
+
+:order3 a types:Order ;
+    ont:id "1003"^^xsd:integer ;
+    ont:date "2024-02-01"^^xsd:date ;
+    ont:total 599.99 ;
+    ont:status "pending" ;
+    ont:client_id :client1 .
+
+:order4 a types:Order ;
+    ont:id "1004"^^xsd:integer ;
+    ont:date "2024-02-10"^^xsd:date ;
+    ont:total 45.00 ;
+    ont:status "completed" ;
+    ont:client_id :client3 .
+
+# Order Items (linking orders to products)
+:orderitem1 a types:OrderItem ;
+    ont:order :order1 ;
+    ont:product :product1 ;
+    ont:quantity 1 ;
+    ont:unit_price 1299.99 .
+
+:orderitem2 a types:OrderItem ;
+    ont:order :order1 ;
+    ont:product :product2 ;
+    ont:quantity 1 ;
+    ont:unit_price 29.99 .
+
+:orderitem3 a types:OrderItem ;
+    ont:order :order2 ;
+    ont:product :product3 ;
+    ont:quantity 1 ;
+    ont:unit_price 249.99 .
+
+:orderitem4 a types:OrderItem ;
+    ont:order :order2 ;
+    ont:product :product2 ;
+    ont:quantity 1 ;
+    ont:unit_price 29.99 .
+
+:orderitem5 a types:OrderItem ;
+    ont:order :order3 ;
+    ont:product :product4 ;
+    ont:quantity 1 ;
+    ont:unit_price 599.99 .
+
+:orderitem6 a types:OrderItem ;
+    ont:order :order4 ;
+    ont:product :product5 ;
+    ont:quantity 1 ;
+    ont:unit_price 45.00 .
+
+# Suppliers
+:supplier1 a types:Supplier ;
+    ont:id "201"^^xsd:integer ;
+    ont:name "Tech Supplies Inc." ;
+    ont:contact "contact@techsupplies.com" ;
+    ont:country "USA" .
+
+:supplier2 a types:Supplier ;
+    ont:id "202"^^xsd:integer ;
+    ont:name "Furniture World" ;
+    ont:contact "info@furnitureworld.com" ;
+    ont:country "Canada" .
+
+:supplier3 a types:Supplier ;
+    ont:id "203"^^xsd:integer ;
+    ont:name "Book Publishers Ltd." ;
+    ont:contact "sales@bookpublishers.com" ;
+    ont:country "UK" .
+
+# Product-Supplier relationships
+:product1 ont:supplier :supplier1 .
+:product2 ont:supplier :supplier1 .
+:product3 ont:supplier :supplier2 .
+:product4 ont:supplier :supplier2 .
+:product5 ont:supplier :supplier3 .
