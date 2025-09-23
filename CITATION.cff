@@ -1,36 +1,11 @@
 cff-version: 1.2.0
 title: SQL2SPARQL - Automatic SQL to SPARQL Converter
-message: If you use this software, please cite both the software and the original research paper.
+message: If you use this software, please cite it as below.
 type: software
 authors:
   - name: SQL2SPARQL Contributors
-repository-code: https://github.com/yourusername/sql2sparql
+repository-code: https://github.com/phamthi1812/sql2sparql
 license: MIT
 version: 1.0.0
 date-released: '2024-01-01'
-
-references:
-  - type: article
-    authors:
-      - family-names: ABATAL
-        given-names: Ahmed
-        affiliation: Hassan I University, Faculty of Sciences and Techniques, Settat, Morocco
-      - family-names: Alaoui
-        given-names: Khadija
-        affiliation: Hassan I University, Faculty of Sciences and Techniques, Settat, Morocco
-      - family-names: Bahaj
-        given-names: Mohamed
-        affiliation: Hassan I University, Faculty of Sciences and Techniques, Settat, Morocco
-        orcid: https://orcid.org/0000-0000-0000-0000
-      - family-names: Alaoui
-        given-names: Larbi
-        affiliation: International University of Rabat, Sala Al Jadida, Morocco
-    title: "SQL2SPARQL4RDF: Automatic SQL to SPARQL Conversion for RDF Querying"
-    journal: International Journal of Advanced Computer Science and Applications
-    volume: 10
-    issue: 11
-    year: 2019
-    doi: 10.1145/3372938.3372968
-    conference:
-      name: International Conference on Advanced Computer Science and Applications
-      date: October 2019
+abstract: An independent implementation of SQL to SPARQL conversion for direct RDF querying using familiar SQL syntax.

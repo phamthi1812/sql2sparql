@@ -1,12 +1,10 @@
 # SQL2SPARQL - Automatic SQL to SPARQL Converter
 
-A production-ready implementation of the SQL2SPARQL4RDF framework for automatic conversion of SQL queries to SPARQL queries, enabling direct querying of RDF data using familiar SQL syntax.
+An independent, production-ready implementation of SQL to SPARQL conversion for direct RDF querying using familiar SQL syntax.
 
-Based on the research paper:
-> **SQL2SPARQL4RDF: Automatic SQL to SPARQL Conversion for RDF Querying**
-> Ahmed ABATAL, Khadija Alaoui, Mohamed Bahaj, Larbi Alaoui
-> *International Journal of Advanced Computer Science and Applications (IJACSA)*, Vol. 10, No. 11, 2019
-> DOI: [10.1145/3372938.3372968](https://doi.org/10.1145/3372938.3372968)
+## About This Implementation
+
+This is an original implementation inspired by algorithms described in the academic literature, particularly the paper "SQL2SPARQL4RDF" (ABATAL et al., 2019). The code, architecture, and engineering decisions are entirely our own work.
 
 ## Features
 
@@ -224,17 +222,21 @@ Contributions are welcome! Please follow these steps:
 
 ## Citation
 
-If you use this software in your research, please cite:
+If you use this software in your work, please cite this repository:
 
 ```bibtex
-@inproceedings{abatal2019sql2sparql,
-  title={SQL2SPARQL4RDF: Automatic SQL to SPARQL Conversion for RDF Querying},
-  author={Abatal, Ahmed and Alaoui, Khadija and Bahaj, Mohamed and Alaoui, Larbi},
-  booktitle={International Conference on Advanced Computer Science and Applications},
-  year={2019},
-  doi={10.1145/3372938.3372968}
+@software{sql2sparql2024,
+  title={SQL2SPARQL: Automatic SQL to SPARQL Converter},
+  author={Your Name},
+  year={2024},
+  url={https://github.com/phamthi1812/sql2sparql}
 }
 ```
+
+## References
+
+This implementation was inspired by concepts from:
+- ABATAL et al. (2019). "SQL2SPARQL4RDF: Automatic SQL to SPARQL Conversion for RDF Querying". IJACSA, Vol. 10, No. 11.
 
 ## License
 
@@ -242,18 +244,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-This implementation is based on the research paper:
-
-**SQL2SPARQL4RDF: Automatic SQL to SPARQL Conversion for RDF Querying**
-- Authors: Ahmed ABATAL¹, Khadija Alaoui², Mohamed Bahaj⁴, Larbi Alaoui³
-- ¹²⁴ Mathematics and Computer Science Department, Hassan I University, Faculty of Sciences and Techniques, Settat, Morocco
-- ³ Mathematics and Computer Science Department, International University of Rabat, Sala Al Jadida, Morocco
-- Published in: International Journal of Advanced Computer Science and Applications (IJACSA), Vol. 10, No. 11, 2019
-- Conference: October 2019
-- DOI: 10.1145/3372938.3372968
-- Citations: 3 | Reads: 1,100+
-
-Special thanks to the authors for their comprehensive algorithms and framework design that made this implementation possible.
+This is an independent implementation created for educational and research purposes. The algorithms are inspired by various academic papers in the field of SQL to SPARQL conversion.
 
 ## Support
 
