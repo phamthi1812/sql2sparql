@@ -188,77 +188,8 @@ executor = SPARQLExecutor(
 )
 ```
 
-## Testing
-
-Run the test suite:
-
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=sql2sparql
-
-# Run specific test module
-pytest tests/test_converter.py
-```
-
-## Performance Considerations
-
-- **Schema Caching**: Schema extraction is cached after first run
-- **Query Optimization**: Generated SPARQL queries are optimized for execution
-- **Batch Processing**: Support for batch conversion of multiple queries
-- **Connection Pooling**: Reuse connections to remote SPARQL endpoints
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## Citation
-
-If you use this software in your work, please cite this repository:
-
-```bibtex
-@software{sql2sparql2024,
-  title={SQL2SPARQL: Automatic SQL to SPARQL Converter},
-  author={Your Name},
-  year={2024},
-  url={https://github.com/phamthi1812/sql2sparql}
-}
-```
-
 ## References
 
 This implementation was inspired by concepts from:
 - ABATAL et al. (2019). "SQL2SPARQL4RDF: Automatic SQL to SPARQL Conversion for RDF Querying". IJACSA, Vol. 10, No. 11.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-This is an independent implementation created for educational and research purposes. The algorithms are inspired by various academic papers in the field of SQL to SPARQL conversion.
-
-## Support
-
-For issues, questions, or suggestions, please:
-- Open an issue on GitHub
-- Contact the maintainers
-- Check the documentation
-
-## Roadmap
-
-- [ ] Support for more complex SQL constructs (subqueries, CTEs)
-- [ ] Query optimization engine
-- [ ] GraphQL interface
-- [ ] Docker containerization
-- [ ] Web UI for interactive conversion
-- [ ] Support for additional RDF stores
-- [ ] Performance benchmarking suite
