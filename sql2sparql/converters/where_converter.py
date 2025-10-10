@@ -284,7 +284,8 @@ class WhereConverter:
         """
         if self.schema_mapper:
             # Use schema mapper if available
-            return f"<http://example.org/ontology/{attribute_name}>"
+            predicate_uri = self.schema_mapper.get_column_property(attribute_name)
+            return f"<{predicate_uri}>"
         else:
             return f"<http://example.org/ontology/{attribute_name}>"
 
@@ -299,7 +300,9 @@ class WhereConverter:
             Type URI string
         """
         if self.schema_mapper:
-            return f"<http://example.org/types/{relation_name.title()}>"
+            # Use schema mapper if available
+            type_uri = self.schema_mapper.get_table_class(relation_name)
+            return f"<{type_uri}>"
         else:
             return f"<http://example.org/types/{relation_name.title()}>"
 
