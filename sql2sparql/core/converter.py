@@ -262,7 +262,9 @@ class SQL2SPARQLConverter:
         if sql_query.group_by:
             group_vars, group_patterns = self.group_having_converter.convert_group_by(
                 sql_query.group_by,
-                sparql_query.where_patterns
+                sparql_query.where_patterns,
+                select_vars,  # Pass SELECT variables for alignment
+                select_patterns  # Pass SELECT patterns for reference
             )
             sparql_query.group_by_vars = group_vars
 
@@ -275,7 +277,9 @@ class SQL2SPARQLConverter:
         if sql_query.having:
             having_conditions = self.group_having_converter.convert_having(
                 sql_query.having,
-                sparql_query.where_patterns
+                sparql_query.where_patterns,
+                select_vars,  # Pass SELECT variables for HAVING alignment
+                select_patterns  # Pass SELECT patterns for reference
             )
             sparql_query.having_conditions = having_conditions
 

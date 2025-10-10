@@ -71,3 +71,10 @@ results/
 # Configuration
 .env
 config.local.yaml
+
+# Apache Jena Fuseki
+apache-jena-fuseki-*/
+fuseki-databases/
+*.tdb
+*.lock
+*.jrnl

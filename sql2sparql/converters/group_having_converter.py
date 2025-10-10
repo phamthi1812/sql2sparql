@@ -28,7 +28,9 @@ class GroupHavingConverter:
     def convert_group_by(
         self,
         group_by_attributes: List[Attribute],
-        existing_patterns: Optional[List[Triple]] = None
+        existing_patterns: Optional[List[Triple]] = None,
+        select_vars: Optional[List[str]] = None,
+        select_patterns: Optional[List[Triple]] = None
     ) -> Tuple[List[str], List[Triple]]:
         """
         Convert SQL GROUP BY clause to SPARQL GROUP BY
@@ -67,25 +69,33 @@ class GroupHavingConverter:
                     additional_patterns.append(type_pattern)
 
             else:
-                # Group by attribute value
-                object_var = f"?{attr.name}_group"
-
-                # Check if pattern already exists in existing patterns
-                predicate_uri = self._get_predicate_uri(attr.name)
-                if not self._pattern_exists(existing_patterns or [], subject_var, predicate_uri):
-                    # Create new pattern for this attribute
-                    pattern = Triple(
-                        subject=subject_var,
-                        predicate=predicate_uri,
-                        object=object_var
-                    )
-                    additional_patterns.append(pattern)
-                else:
-                    # Find the existing object variable
-                    found_object_var = self._find_object_var(
-                        existing_patterns or [], subject_var, predicate_uri
-                    )
-                    object_var = found_object_var if found_object_var else f"?{attr.name}_group"
+                # Group by attribute value - use SELECT variable if available
+                object_var = None
+                
+                # Try to find matching variable in SELECT vars
+                if select_vars:
+                    object_var = self._find_select_var_for_attribute(attr, select_vars, select_patterns or [])
+                
+                # If not found in SELECT, create new variable
+                if object_var is None:
+                    object_var = f"?{attr.name}_group"
+                    
+                    # Check if pattern already exists in existing patterns
+                    predicate_uri = self._get_predicate_uri(attr.name)
+                    if not self._pattern_exists(existing_patterns or [], subject_var, predicate_uri):
+                        # Create new pattern for this attribute
+                        pattern = Triple(
+                            subject=subject_var,
+                            predicate=predicate_uri,
+                            object=object_var
+                        )
+                        additional_patterns.append(pattern)
+                    else:
+                        # Find the existing object variable
+                        found_object_var = self._find_object_var(
+                            existing_patterns or [], subject_var, predicate_uri
+                        )
+                        object_var = found_object_var if found_object_var else f"?{attr.name}_group"
 
                 group_vars.append(object_var)
 
@@ -94,10 +104,44 @@ class GroupHavingConverter:
 
         return group_vars, additional_patterns
 
+    def _find_select_var_for_attribute(
+        self, 
+        attr: Attribute, 
+        select_vars: List[str], 
+        select_patterns: List[Triple]
+    ) -> Optional[str]:
+        """
+        Find the SELECT variable that corresponds to a GROUP BY attribute
+        
+        Args:
+            attr: GROUP BY attribute
+            select_vars: List of SELECT variables
+            select_patterns: List of SELECT triple patterns
+            
+        Returns:
+            Matching SELECT variable or None
+        """
+        # Look through SELECT patterns to find matching attribute
+        for i, pattern in enumerate(select_patterns):
+            if (pattern.predicate and attr.name in pattern.predicate and 
+                i < len(select_vars)):
+                return select_vars[i]
+        
+        # Also try to match by variable name patterns
+        for var in select_vars:
+            # Remove ? prefix and check if it matches attribute name
+            var_name = var.lstrip('?')
+            if attr.name.lower() in var_name.lower():
+                return var
+                
+        return None
+
     def convert_having(
         self,
         having_conditions: List[WhereCondition],
-        existing_patterns: Optional[List[Triple]] = None
+        existing_patterns: Optional[List[Triple]] = None,
+        select_vars: Optional[List[str]] = None,
+        select_patterns: Optional[List[Triple]] = None
     ) -> List[str]:
         """
         Convert SQL HAVING clause to SPARQL HAVING
@@ -128,20 +172,37 @@ class GroupHavingConverter:
                         subject_var, attr.aggregate
                     )
                 else:
-                    # Find or create object variable for this attribute
-                    predicate_uri = self._get_predicate_uri(attr.name)
-                    object_var = self._find_object_var(
-                        existing_patterns or [], subject_var, predicate_uri
-                    )
+                    # Try to find matching variable in SELECT vars first
+                    object_var = None
+                    if select_vars:
+                        object_var = self._find_select_var_for_attribute(attr, select_vars, select_patterns or [])
+                    
+                    # If not found in SELECT, look in existing patterns
+                    if object_var is None:
+                        predicate_uri = self._get_predicate_uri(attr.name)
+                        object_var = self._find_object_var(
+                            existing_patterns or [], subject_var, predicate_uri
+                        )
 
                     if not object_var:
-                        # Create new variable
+                        # Create new variable as last resort
                         object_var = f"?{attr.name}_having"
 
                     if attr.aggregate:
-                        agg_expr = self._build_aggregate_expr(
-                            object_var, attr.aggregate
-                        )
+                        # For HAVING, always build a fresh aggregate expression
+                        # using the base variable, not the SELECT alias
+                        if 'AS' in object_var and '(' in object_var:
+                            # Extract base variable from SELECT expression
+                            import re
+                            match = re.search(r'\?(\w+)', object_var)
+                            base_var = match.group(0) if match else object_var
+                            agg_expr = self._build_aggregate_expr(
+                                base_var, attr.aggregate
+                            )
+                        else:
+                            agg_expr = self._build_aggregate_expr(
+                                object_var, attr.aggregate
+                            )
                     else:
                         continue
 
