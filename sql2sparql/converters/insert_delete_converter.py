@@ -2,7 +2,7 @@
 INSERT and DELETE Converters - Converts SQL INSERT/DELETE to SPARQL
 Based on algorithms from Tables XIII-XV in the paper
 """
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 import uuid
 from ..core.models import Triple, WhereCondition
 
@@ -80,7 +80,7 @@ class InsertDeleteConverter:
         self,
         table_name: str,
         where_conditions: List[WhereCondition],
-        join_conditions: List = None
+        join_conditions: Optional[List] = None
     ) -> Tuple[List[Triple], List[Triple], List[str]]:
         """
         Convert SQL DELETE to SPARQL DELETE WHERE
@@ -240,6 +240,14 @@ class InsertDeleteConverter:
         # Check if it's a number
         if isinstance(value, (int, float)):
             return str(value)
+
+        # Check if string value is a number
+        if isinstance(value, str):
+            try:
+                float(value)
+                return value  # Return as-is if it's numeric
+            except ValueError:
+                pass  # Not a number, continue
 
         # Check if it's a boolean
         if isinstance(value, bool):

@@ -11,9 +11,14 @@ __author__ = "SQL2SPARQL Team"
 from .core.converter import SQL2SPARQLConverter
 from .core.schema_mapper import SchemaMapper
 from .executors.sparql_executor import SPARQLExecutor
+from .core.models import SQLQuery, SPARQLQuery, Triple, Attribute
 
 __all__ = [
     "SQL2SPARQLConverter",
-    "SchemaMapper",
+    "SchemaMapper", 
     "SPARQLExecutor",
+    "SQLQuery",
+    "SPARQLQuery",
+    "Triple",
+    "Attribute",
 ]

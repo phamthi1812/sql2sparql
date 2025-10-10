@@ -7,8 +7,7 @@ from enum import Enum
 import json
 import requests
 from SPARQLWrapper import SPARQLWrapper, JSON, POST, GET, BASIC
-from rdflib import Graph, Namespace
-from rdflib.plugins.sparql import prepareQuery
+from rdflib import Graph
 
 
 class StoreType(Enum):
@@ -28,10 +27,10 @@ class SPARQLExecutor:
     def __init__(
         self,
         store_type: StoreType = StoreType.RDFLIB,
-        endpoint: str = None,
-        username: str = None,
-        password: str = None,
-        graph: Graph = None
+        endpoint: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        graph: Optional[Graph] = None
     ):
         """
         Initialize SPARQL executor
@@ -59,7 +58,7 @@ class SPARQLExecutor:
         else:
             raise ValueError(f"Endpoint required for {store_type}")
 
-    def execute_query(self, sparql_query: str) -> Union[Dict, List, bool]:
+    def execute_query(self, sparql_query: str) -> Union[Dict, List, bool, Graph]:
         """
         Execute a SPARQL query
 
@@ -129,12 +128,14 @@ class SPARQLExecutor:
         """
         if self.store_type == StoreType.RDFLIB:
             result = self.graph.query(query)
-            return result.askAnswer
+            return bool(result.askAnswer)
         else:
             self.sparql.setQuery(query)
             self.sparql.setReturnFormat(JSON)
             results = self.sparql.query().convert()
-            return results.get('boolean', False)
+            if isinstance(results, dict):
+                return results.get('boolean', False)
+            return False
 
     def _execute_construct(self, query: str) -> Graph:
         """
@@ -148,7 +149,7 @@ class SPARQLExecutor:
         """
         if self.store_type == StoreType.RDFLIB:
             result = self.graph.query(query)
-            return result.graph
+            return result.graph if result.graph else Graph()
         else:
             self.sparql.setQuery(query)
             self.sparql.setReturnFormat(JSON)
@@ -184,17 +185,22 @@ class SPARQLExecutor:
         qres = self.graph.query(query)
 
         # Get variable names
-        var_names = [str(var) for var in qres.vars]
+        var_names = [str(var) for var in qres.vars] if qres.vars else []
 
         # Convert results to dictionaries
         for row in qres:
-            result_dict = {}
-            for i, var in enumerate(var_names):
-                value = row[i]
-                if value is not None:
-                    result_dict[var] = str(value)
-                else:
-                    result_dict[var] = None
+            result_dict: Dict[str, Any] = {}
+            # Handle different row types
+            if hasattr(row, '__getitem__') and not isinstance(row, bool):
+                for i, var in enumerate(var_names):
+                    try:
+                        value = row[i]
+                        if value is not None:
+                            result_dict[var] = str(value)
+                        else:
+                            result_dict[var] = None
+                    except (IndexError, TypeError):
+                        result_dict[var] = None
             results.append(result_dict)
 
         return results
@@ -234,12 +240,17 @@ class SPARQLExecutor:
 
         # Parse results
         rows = []
-        for result in results["results"]["bindings"]:
-            row = {}
-            for var in result:
-                value = result[var]["value"]
-                row[var] = value
-            rows.append(row)
+        if isinstance(results, dict) and "results" in results and isinstance(results["results"], dict):
+            bindings = results["results"].get("bindings", [])
+            if isinstance(bindings, list):
+                for result in bindings:
+                    if isinstance(result, dict):
+                        row = {}
+                        for var in result:
+                            if isinstance(result[var], dict) and "value" in result[var]:
+                                value = result[var]["value"]
+                                row[var] = value
+                        rows.append(row)
 
         return rows
 
@@ -277,7 +288,7 @@ class SPARQLExecutor:
             True if successful
         """
         # AllegroGraph specific update endpoint
-        update_endpoint = self.endpoint.replace('/sparql', '/update')
+        update_endpoint = (self.endpoint or '').replace('/sparql', '/update')
 
         headers = {
             'Content-Type': 'application/sparql-update'
@@ -324,19 +335,19 @@ class SPARQLExecutor:
         # Count total triples
         count_query = "SELECT (COUNT(*) as ?count) WHERE { ?s ?p ?o }"
         result = self.execute_query(count_query)
-        if result:
+        if isinstance(result, list) and result and isinstance(result[0], dict):
             stats['total_triples'] = int(result[0].get('count', 0))
 
         # Count distinct subjects
         subj_query = "SELECT (COUNT(DISTINCT ?s) as ?count) WHERE { ?s ?p ?o }"
         result = self.execute_query(subj_query)
-        if result:
+        if isinstance(result, list) and result and isinstance(result[0], dict):
             stats['distinct_subjects'] = int(result[0].get('count', 0))
 
         # Count distinct predicates
         pred_query = "SELECT (COUNT(DISTINCT ?p) as ?count) WHERE { ?s ?p ?o }"
         result = self.execute_query(pred_query)
-        if result:
+        if isinstance(result, list) and result and isinstance(result[0], dict):
             stats['distinct_predicates'] = int(result[0].get('count', 0))
 
         # Count distinct types
@@ -345,7 +356,7 @@ class SPARQLExecutor:
         WHERE { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?type }
         """
         result = self.execute_query(type_query)
-        if result:
+        if isinstance(result, list) and result and isinstance(result[0], dict):
             stats['distinct_types'] = int(result[0].get('count', 0))
 
         return stats

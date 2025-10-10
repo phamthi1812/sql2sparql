@@ -2,7 +2,7 @@
 SELECT Clause Converter - Converts SQL SELECT clauses to SPARQL
 Based on algorithm from Table X (exConvSqlSelect) in the paper
 """
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from ..core.models import Attribute, Triple, AggregateFunction
 
 
@@ -36,7 +36,7 @@ class SelectConverter:
         """
         sparql_vars = []
         triple_patterns = []
-        subject_vars = {}  # Track subject variables per relation
+        subject_vars: Dict[str, str] = {}  # Track subject variables per relation
 
         for idx, attr in enumerate(attributes):
             # Get or create subject variable for this relation
@@ -47,9 +47,9 @@ class SelectConverter:
 
             if attr.name.lower() == 'subject':
                 # Handle subject attribute
-                if attr.is_aggregate():
+                if attr.is_aggregate() and attr.aggregate:
                     # Aggregate on subject
-                    var_name = self._apply_aggregate(subject_var, attr.aggregate)
+                    var_name = self._apply_aggregate(subject_var, attr.aggregate, attr.alias)
                     sparql_vars.append(var_name)
                 else:
                     sparql_vars.append(subject_var)
@@ -66,9 +66,9 @@ class SelectConverter:
                 # Handle regular attribute
                 object_var = f"?o{idx}"
 
-                if attr.is_aggregate():
+                if attr.is_aggregate() and attr.aggregate:
                     # Apply aggregate function
-                    var_name = self._apply_aggregate(object_var, attr.aggregate)
+                    var_name = self._apply_aggregate(object_var, attr.aggregate, attr.alias)
                     sparql_vars.append(var_name)
                 else:
                     sparql_vars.append(object_var)
@@ -85,13 +85,14 @@ class SelectConverter:
         self.triple_patterns = triple_patterns
         return sparql_vars, triple_patterns
 
-    def _apply_aggregate(self, variable: str, aggregate: AggregateFunction) -> str:
+    def _apply_aggregate(self, variable: str, aggregate: AggregateFunction, alias: Optional[str] = None) -> str:
         """
         Apply aggregate function to a variable
 
         Args:
             variable: SPARQL variable
             aggregate: Aggregate function enum
+            alias: Optional alias for the aggregate result
 
         Returns:
             Aggregate function call string
@@ -105,7 +106,11 @@ class SelectConverter:
         }
 
         agg_func = agg_map.get(aggregate, "COUNT")
-        return f"({agg_func}({variable}) AS {variable}_agg)"
+
+        # Use provided alias or default to variable_agg
+        result_alias = f"?{alias}" if alias else f"{variable}_agg"
+
+        return f"({agg_func}({variable}) AS {result_alias})"
 
     def _get_predicate_uri(self, attribute_name: str) -> str:
         """

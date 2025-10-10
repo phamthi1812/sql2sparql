@@ -50,7 +50,7 @@ class SQL2SPARQLDemo:
 
         # Load the sample data
         self.graph = Graph()
-        sample_data_path = Path(__file__).parent / "sql2sparql" / "examples" / "sample_data.ttl"
+        sample_data_path = Path(__file__).parent / "sample_data.ttl"
 
         if not sample_data_path.exists():
             console.print(f"[red]Sample data not found at: {sample_data_path}[/red]")

@@ -1,0 +1,663 @@
+[
+  {
+    "title": "1. Simple SELECT with WHERE condition",
+    "sql": "SELECT name, price FROM product WHERE price > 100",
+    "success": true,
+    "sparql": "SELECT ?o0 ?o1\nWHERE {\n  ?s0 <http://example.org/ontology/name> ?o0 .\n  ?s0 <http://example.org/ontology/price> ?o1 .\n  ?s0 <http://example.org/ontology/price> ?price .\n  FILTER(?price > 100)\n}",
+    "error": null,
+    "execution_result": [
+      {
+        "o0": "Laptop Pro",
+        "o1": "1299.99"
+      },
+      {
+        "o0": "Office Chair",
+        "o1": "249.99"
+      },
+      {
+        "o0": "Standing Desk",
+        "o1": "599.99"
+      }
+    ]
+  },
+  {
+    "title": "2. Multiple WHERE conditions with AND/OR",
+    "sql": "SELECT name, category, price FROM product WHERE category = 'Electronics' AND price < 500 OR stock > 20",
+    "success": true,
+    "sparql": "SELECT ?name ?category ?price\nWHERE {\n  ?product <http://example.org/ontology/name> ?name .\n  ?product <http://example.org/ontology/category> ?category .\n  ?product <http://example.org/ontology/price> ?price .\n  FILTER(?category = \"Electronics\")\n  FILTER(?price < 500 || ?stock > 20)\n}",
+    "error": null,
+    "execution_result": [
+      {
+        "name": "Wireless Mouse",
+        "category": "Electronics",
+        "price": "29.99"
+      }
+    ]
+  },
+  {
+    "title": "3. Pattern matching with LIKE",
+    "sql": "SELECT name, email FROM client WHERE email LIKE '%example.com'",
+    "success": true,
+    "sparql": "SELECT ?o0 ?o1\nWHERE {\n  ?s0 <http://example.org/ontology/name> ?o0 .\n  ?s0 <http://example.org/ontology/email> ?o1 .\n  ?s0 <http://example.org/ontology/email> ?email .\n  FILTER(regex(?email, \".*example.com\", \"i\"))\n}",
+    "error": null,
+    "execution_result": [
+      {
+        "o0": "John Doe",
+        "o1": "john.doe@example.com"
+      },
+      {
+        "o0": "Jane Smith",
+        "o1": "jane.smith@example.com"
+      },
+      {
+        "o0": "Bob Johnson",
+        "o1": "bob.johnson@example.com"
+      }
+    ]
+  },
+  {
+    "title": "4. JOIN across two tables",
+    "sql": "SELECT client.name, order.date, order.total FROM client, order WHERE client.id = order.client_id",
+    "success": true,
+    "sparql": "SELECT ?o0 ?o1 ?o2\nWHERE {\n  ?s0 <http://example.org/ontology/name> ?o0 .\n  ?s1 <http://example.org/ontology/date> ?o1 .\n  ?s1 <http://example.org/ontology/total> ?o2 .\n  ?s2 <http://example.org/ontology/id> ?join_0 .\n  ?s3 <http://example.org/ontology/client_id> ?join_0 .\n}",
+    "error": null,
+    "execution_result": []
+  },
+  {
+    "title": "5. Complex three-way JOIN",
+    "sql": "SELECT client.name, product.name, orderitem.quantity\n                         FROM client, order, orderitem, product\n                         WHERE client.id = order.client_id\n                           AND order.id = orderitem.order\n                           AND orderitem.product = product.id",
+    "success": true,
+    "sparql": "SELECT ?o0 ?o1 ?o2\nWHERE {\n  ?s0 <http://example.org/ontology/name> ?o0 .\n  ?s1 <http://example.org/ontology/name> ?o1 .\n  ?s2 <http://example.org/ontology/quantity> ?o2 .\n  ?s2 <http://example.org/ontology/id> ?join_0 .\n  ?s3 <http://example.org/ontology/client_id> ?join_0 .\n  ?s3 <http://example.org/ontology/id> ?join_2 .\n  ?s5 <http://example.org/ontology/order> ?join_2 .\n  ?s5 <http://example.org/ontology/product> ?join_4 .\n  ?s6 <http://example.org/ontology/id> ?join_4 .\n}",
+    "error": null,
+    "execution_result": []
+  },
+  {
+    "title": "6. Aggregate function - COUNT with GROUP BY",
+    "sql": "SELECT category, COUNT(name) FROM product GROUP BY category",
+    "success": true,
+    "sparql": "SELECT ?o0 (COUNT(?o1) AS ?o1_agg)\nWHERE {\n  ?s0 <http://example.org/ontology/category> ?o0 .\n  ?s0 <http://example.org/ontology/name> ?o1 .\n}\nGROUP BY ?o0",
+    "error": null,
+    "execution_result": [
+      {
+        "o0": "Electronics",
+        "o1_agg": "2"
+      },
+      {
+        "o0": "Furniture",
+        "o1_agg": "2"
+      },
+      {
+        "o0": "Books",
+        "o1_agg": "1"
+      }
+    ]
+  },
+  {
+    "title": "7. Multiple aggregates with HAVING",
+    "sql": "SELECT category, COUNT(name), AVG(price), SUM(stock) FROM product GROUP BY category HAVING COUNT(name) > 1",
+    "success": true,
+    "sparql": "SELECT ?o0 (COUNT(?o1) AS ?o1_agg) (AVG(?o2) AS ?o2_agg) (SUM(?o3) AS ?o3_agg)\nWHERE {\n  ?s0 <http://example.org/ontology/category> ?o0 .\n  ?s0 <http://example.org/ontology/name> ?o1 .\n  ?s0 <http://example.org/ontology/price> ?o2 .\n  ?s0 <http://example.org/ontology/stock> ?o3 .\n}\nGROUP BY ?o0\nHAVING(COUNT(?o1) > 1)",
+    "error": null,
+    "execution_result": [
+      {
+        "o0": "Electronics",
+        "o1_agg": "2",
+        "o2_agg": "664.99",
+        "o3_agg": "65"
+      },
+      {
+        "o0": "Furniture",
+        "o1_agg": "2",
+        "o2_agg": "424.99",
+        "o3_agg": "30"
+      }
+    ]
+  },
+  {
+    "title": "8. ORDER BY with LIMIT",
+    "sql": "SELECT name, price FROM product ORDER BY price DESC LIMIT 3",
+    "success": true,
+    "sparql": "SELECT ?o0 ?o1\nWHERE {\n  ?s0 <http://example.org/ontology/name> ?o0 .\n  ?s0 <http://example.org/ontology/price> ?o1 .\n}\nORDER BY DESC(?o0)",
+    "error": null,
+    "execution_result": [
+      {
+        "o0": "Wireless Mouse",
+        "o1": "29.99"
+      },
+      {
+        "o0": "Standing Desk",
+        "o1": "599.99"
+      },
+      {
+        "o0": "Python Programming Book",
+        "o1": "45.00"
+      },
+      {
+        "o0": "Office Chair",
+        "o1": "249.99"
+      },
+      {
+        "o0": "Laptop Pro",
+        "o1": "1299.99"
+      }
+    ]
+  },
+  {
+    "title": "9. Complex aggregate with JOIN and ORDER BY",
+    "sql": "SELECT client.name, SUM(order.total) as total_spent\n                         FROM client, order\n                         WHERE client.id = order.client_id\n                         GROUP BY client.name\n                         ORDER BY total_spent DESC",
+    "success": true,
+    "sparql": "SELECT ?o0 (SUM(?o1) AS ?total_spent)\nWHERE {\n  ?s0 <http://example.org/ontology/name> ?o0 .\n  ?s1 <http://example.org/ontology/total> ?o1 .\n  ?s2 <http://example.org/ontology/id> ?join_0 .\n  ?s3 <http://example.org/ontology/client_id> ?join_0 .\n}\nGROUP BY ?o0\nORDER BY DESC(?o0)",
+    "error": null,
+    "execution_result": []
+  },
+  {
+    "title": "10. DISTINCT with JOIN",
+    "sql": "SELECT DISTINCT client.name, client.email\n                         FROM client, order\n                         WHERE client.id = order.client_id\n                           AND order.status = 'pending'",
+    "success": true,
+    "sparql": "SELECT ?o0 ?o1\nWHERE {\n  ?s0 <http://example.org/ontology/name> ?o0 .\n  ?s1 <http://example.org/ontology/email> ?o1 .\n  ?s2 <http://example.org/ontology/id> ?join_0 .\n  ?s3 <http://example.org/ontology/client_id> ?join_0 .\n  ?s3 <http://example.org/ontology/status> ?status .\n  FILTER(?status = \"pending\")\n}",
+    "error": null,
+    "execution_result": []
+  },
+  {
+    "title": "11. Date comparison and filtering",
+    "sql": "SELECT client.name, order.date, order.total\n                         FROM client, order\n                         WHERE client.id = order.client_id\n                           AND order.date > '2024-01-01'\n                         ORDER BY order.date DESC",
+    "success": true,
+    "sparql": "SELECT ?o0 ?o1 ?o2\nWHERE {\n  ?s0 <http://example.org/ontology/name> ?o0 .\n  ?s1 <http://example.org/ontology/date> ?o1 .\n  ?s1 <http://example.org/ontology/total> ?o2 .\n  ?s2 <http://example.org/ontology/id> ?join_0 .\n  ?s3 <http://example.org/ontology/client_id> ?join_0 .\n  ?s3 <http://example.org/ontology/date> ?date .\n  FILTER(?date > \"2024-01-01\")\n}\nORDER BY DESC(?o0)",
+    "error": null,
+    "execution_result": []
+  },
+  {
+    "title": "12. Calculated columns",
+    "sql": "SELECT name, price, stock, (price * stock) AS inventory_value FROM product WHERE (price * stock) > 1000",
+    "success": true,
+    "sparql": "SELECT ?name ?price ?stock ((?price * ?stock) AS ?inventory_value)\nWHERE {\n  ?product <http://example.org/ontology/name> ?name .\n  ?product <http://example.org/ontology/price> ?price .\n  ?product <http://example.org/ontology/stock> ?stock .\n  FILTER((?price * ?stock) > 1000)\n}",
+    "error": null,
+    "execution_result": [
+      {
+        "name": "Laptop Pro",
+        "price": "1299.99",
+        "stock": "15",
+        "inventory_value": "19499.85"
+      },
+      {
+        "name": "Wireless Mouse",
+        "price": "29.99",
+        "stock": "50",
+        "inventory_value": "1499.50"
+      },
+      {
+        "name": "Office Chair",
+        "price": "249.99",
+        "stock": "20",
+        "inventory_value": "4999.80"
+      },
+      {
+        "name": "Standing Desk",
+        "price": "599.99",
+        "stock": "10",
+        "inventory_value": "5999.90"
+      },
+      {
+        "name": "Python Programming Book",
+        "price": "45.00",
+        "stock": "30",
+        "inventory_value": "1350.00"
+      }
+    ]
+  },
+  {
+    "title": "13. UNION operation",
+    "sql": "SELECT name FROM client\n                         UNION\n                         SELECT name FROM product\n                         UNION\n                         SELECT name FROM supplier",
+    "success": true,
+    "sparql": "SELECT ?o0\nWHERE {\n  { ?s0 <http://example.org/ontology/name> ?o0 . }\n  UNION\n  { ?s0 <http://example.org/ontology/name> ?o0 . }\n  UNION\n  { ?s0 <http://example.org/ontology/name> ?o0 . }\n}",
+    "error": null,
+    "execution_result": [
+      {
+        "o0": "John Doe"
+      },
+      {
+        "o0": "Jane Smith"
+      },
+      {
+        "o0": "Bob Johnson"
+      },
+      {
+        "o0": "Laptop Pro"
+      },
+      {
+        "o0": "Wireless Mouse"
+      },
+      {
+        "o0": "Office Chair"
+      },
+      {
+        "o0": "Standing Desk"
+      },
+      {
+        "o0": "Python Programming Book"
+      },
+      {
+        "o0": "Tech Supplies Inc."
+      },
+      {
+        "o0": "Furniture World"
+      },
+      {
+        "o0": "Book Publishers Ltd."
+      },
+      {
+        "o0": "John Doe"
+      },
+      {
+        "o0": "Jane Smith"
+      },
+      {
+        "o0": "Bob Johnson"
+      },
+      {
+        "o0": "Laptop Pro"
+      },
+      {
+        "o0": "Wireless Mouse"
+      },
+      {
+        "o0": "Office Chair"
+      },
+      {
+        "o0": "Standing Desk"
+      },
+      {
+        "o0": "Python Programming Book"
+      },
+      {
+        "o0": "Tech Supplies Inc."
+      },
+      {
+        "o0": "Furniture World"
+      },
+      {
+        "o0": "Book Publishers Ltd."
+      },
+      {
+        "o0": "John Doe"
+      },
+      {
+        "o0": "Jane Smith"
+      },
+      {
+        "o0": "Bob Johnson"
+      },
+      {
+        "o0": "Laptop Pro"
+      },
+      {
+        "o0": "Wireless Mouse"
+      },
+      {
+        "o0": "Office Chair"
+      },
+      {
+        "o0": "Standing Desk"
+      },
+      {
+        "o0": "Python Programming Book"
+      },
+      {
+        "o0": "Tech Supplies Inc."
+      },
+      {
+        "o0": "Furniture World"
+      },
+      {
+        "o0": "Book Publishers Ltd."
+      }
+    ]
+  },
+  {
+    "title": "14. Supplier filtering by country",
+    "sql": "SELECT name, contact FROM supplier WHERE country = 'USA'",
+    "success": true,
+    "sparql": "SELECT ?o0 ?o1\nWHERE {\n  ?s0 <http://example.org/ontology/name> ?o0 .\n  ?s0 <http://example.org/ontology/contact> ?o1 .\n  ?s0 <http://example.org/ontology/country> ?country .\n  FILTER(?country = \"USA\")\n}",
+    "error": null,
+    "execution_result": [
+      {
+        "o0": "Tech Supplies Inc.",
+        "o1": "contact@techsupplies.com"
+      }
+    ]
+  },
+  {
+    "title": "15. Complex filtering with status and stock",
+    "sql": "SELECT name, stock, price\n                         FROM product\n                         WHERE stock < 20\n                           AND category IN ('Electronics', 'Furniture')\n                         ORDER BY stock ASC",
+    "success": true,
+    "sparql": "SELECT ?name ?stock ?price\nWHERE {\n  ?product <http://example.org/ontology/name> ?name .\n  ?product <http://example.org/ontology/stock> ?stock .\n  ?product <http://example.org/ontology/price> ?price .\n  FILTER(?stock < 20)\n  FILTER(?category IN (\"Electronics\", \"Furniture\"))\n}\nORDER BY ASC(?stock)",
+    "error": null,
+    "execution_result": []
+  },
+  {
+    "title": "16. INSERT operation",
+    "sql": "INSERT INTO client (name, email, age, status) VALUES ('Alice Brown', 'alice.brown@example.com', 30, 'active')",
+    "success": true,
+    "sparql": "INSERT DATA {\n  <http://example.org/client/7bf094b2> rdf:type <http://example.org/types/Client> .\n  <http://example.org/client/7bf094b2> <http://example.org/ontology/name> \"Alice Brown\" .\n  <http://example.org/client/7bf094b2> <http://example.org/ontology/email> \"alice.brown@example.com\" .\n  <http://example.org/client/7bf094b2> <http://example.org/ontology/age> 30 .\n  <http://example.org/client/7bf094b2> <http://example.org/ontology/status> \"active\" .\n}",
+    "error": null,
+    "execution_result": "Non-SELECT query"
+  },
+  {
+    "title": "17. DELETE operation with WHERE",
+    "sql": "DELETE FROM client WHERE status = 'inactive'",
+    "success": true,
+    "sparql": "DELETE {\n  ?s0 <http://example.org/ontology/status> ?status_del .\n  ?s0 rdf:type <http://example.org/types/Client> .\n}\nWHERE {\n  ?s0 rdf:type <http://example.org/types/Client> .\n  ?s0 <http://example.org/ontology/status> ?status_del .\n  FILTER(?status_del = \"inactive'\")\n}",
+    "error": null,
+    "execution_result": "Non-SELECT query"
+  },
+  {
+    "title": "18. Range query with BETWEEN",
+    "sql": "SELECT name, price FROM product WHERE price BETWEEN 50 AND 300",
+    "success": true,
+    "sparql": "SELECT ?name ?price\nWHERE {\n  ?product <http://example.org/ontology/name> ?name .\n  ?product <http://example.org/ontology/price> ?price .\n  FILTER(?price >= 50 && ?price <= 300)\n}",
+    "error": null,
+    "execution_result": [
+      {
+        "name": "Office Chair",
+        "price": "249.99"
+      }
+    ]
+  },
+  {
+    "title": "19. MAX and MIN aggregates",
+    "sql": "SELECT category, MAX(price) as max_price, MIN(price) as min_price FROM product GROUP BY category",
+    "success": true,
+    "sparql": "SELECT ?o0 (MAX(?o1) AS ?max_price) (MIN(?o2) AS ?min_price)\nWHERE {\n  ?s0 <http://example.org/ontology/category> ?o0 .\n  ?s0 <http://example.org/ontology/price> ?o1 .\n  ?s0 <http://example.org/ontology/price> ?o2 .\n}\nGROUP BY ?o0",
+    "error": null,
+    "execution_result": [
+      {
+        "o0": "Electronics",
+        "max_price": "1299.99",
+        "min_price": "29.99"
+      },
+      {
+        "o0": "Furniture",
+        "max_price": "599.99",
+        "min_price": "249.99"
+      },
+      {
+        "o0": "Books",
+        "max_price": "45.00",
+        "min_price": "45.00"
+      }
+    ]
+  },
+  {
+    "title": "20. Complex nested condition",
+    "sql": "SELECT client.name, order.date, order.total, order.status\n                         FROM client, order\n                         WHERE client.id = order.client_id\n                           AND ((order.status = 'completed' AND order.total > 500)\n                                OR (order.status = 'pending' AND order.date > '2024-01-01'))",
+    "success": true,
+    "sparql": "SELECT ?client_name ?order_date ?order_total ?order_status\nWHERE {\n  ?client <http://example.org/ontology/name> ?client_name .\n  ?order <http://example.org/ontology/date> ?order_date .\n  ?order <http://example.org/ontology/total> ?order_total .\n  ?order <http://example.org/ontology/status> ?order_status .\n}",
+    "error": null,
+    "execution_result": [
+      {
+        "client_name": "John Doe",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Jane Smith",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Bob Johnson",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Laptop Pro",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Wireless Mouse",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Office Chair",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Standing Desk",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Python Programming Book",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Tech Supplies Inc.",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Furniture World",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Book Publishers Ltd.",
+        "order_date": "2024-01-15",
+        "order_total": "1329.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "John Doe",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Jane Smith",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Bob Johnson",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Laptop Pro",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Wireless Mouse",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Office Chair",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Standing Desk",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Python Programming Book",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Tech Supplies Inc.",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Furniture World",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Book Publishers Ltd.",
+        "order_date": "2024-01-20",
+        "order_total": "279.98",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "John Doe",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "Jane Smith",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "Bob Johnson",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "Laptop Pro",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "Wireless Mouse",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "Office Chair",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "Standing Desk",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "Python Programming Book",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "Tech Supplies Inc.",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "Furniture World",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "Book Publishers Ltd.",
+        "order_date": "2024-02-01",
+        "order_total": "599.99",
+        "order_status": "pending"
+      },
+      {
+        "client_name": "John Doe",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Jane Smith",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Bob Johnson",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Laptop Pro",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Wireless Mouse",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Office Chair",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Standing Desk",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Python Programming Book",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Tech Supplies Inc.",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Furniture World",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      },
+      {
+        "client_name": "Book Publishers Ltd.",
+        "order_date": "2024-02-10",
+        "order_total": "45.00",
+        "order_status": "completed"
+      }
+    ]
+  }
+]

@@ -2,9 +2,9 @@
 Schema Mapper - Extracts relational schema from RDF data
 Based on algorithms from Tables I and II of the paper
 """
-from typing import Dict, List, Set, Tuple
-from rdflib import Graph, URIRef, Literal, Namespace, RDF
-from .models import RelationalSchema, Triple
+from typing import Dict, List, Set, Optional, Tuple
+from rdflib import Graph, URIRef, RDF
+from .models import RelationalSchema
 
 
 class SchemaMapper:
@@ -13,7 +13,7 @@ class SchemaMapper:
     with a familiar interface for querying RDF data.
     """
 
-    def __init__(self, rdf_graph: Graph = None):
+    def __init__(self, rdf_graph: Optional[Graph] = None):
         """
         Initialize the schema mapper with an RDF graph
 
@@ -86,7 +86,8 @@ class SchemaMapper:
                     type_predicates[type_str] = set()
             else:
                 # Find the type(s) of this subject
-                subject_types = self._get_subject_types(subj)
+                subject_uri = subj if isinstance(subj, URIRef) else URIRef(str(subj))
+                subject_types = self._get_subject_types(subject_uri)
 
                 # Add this predicate to each type's predicate set
                 for subject_type in subject_types:
@@ -95,7 +96,8 @@ class SchemaMapper:
                         type_predicates[type_str] = set()
 
                     # Add the predicate to this type's set
-                    pred_name = self._get_attribute_name(pred)
+                    pred_uri = pred if isinstance(pred, URIRef) else URIRef(str(pred))
+                    pred_name = self._get_attribute_name(pred_uri)
                     type_predicates[type_str].add(pred_name)
 
         return type_predicates
@@ -110,9 +112,12 @@ class SchemaMapper:
         Returns:
             List of RDF type URIs
         """
-        types = []
+        types: List[URIRef] = []
         for s, p, o in self.graph.triples((subject, RDF.type, None)):
-            types.append(o)
+            if isinstance(o, URIRef):
+                types.append(o)
+            else:
+                types.append(URIRef(str(o)))
         return types if types else [URIRef("http://www.w3.org/2002/07/owl#Thing")]
 
     def _get_table_name(self, rdf_type: str) -> str:

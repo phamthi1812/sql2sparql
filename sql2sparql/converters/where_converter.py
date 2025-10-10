@@ -2,9 +2,9 @@
 WHERE Clause Converter - Converts SQL WHERE clauses to SPARQL
 Based on algorithm from Table VIII (ConvSqlWhere) in the paper
 """
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Any
 from ..core.models import (
-    WhereCondition, JoinCondition, Triple, Attribute
+    WhereCondition, JoinCondition, Triple
 )
 
 
@@ -30,7 +30,7 @@ class WhereConverter:
         self,
         join_conditions: List[JoinCondition],
         where_conditions: List[WhereCondition],
-        existing_patterns: List[Triple] = None
+        existing_patterns: Optional[List[Triple]] = None
     ) -> Tuple[List[Triple], List[str]]:
         """
         Convert SQL WHERE clause to SPARQL WHERE patterns
@@ -172,7 +172,15 @@ class WhereConverter:
 
         for cond in where_conditions:
             attr = cond.attribute
-            subject_var = self._get_subject_var(attr.relation)
+            # For expressions or attributes without relations, use the first/default subject var
+            if attr.relation:
+                subject_var = self._get_subject_var(attr.relation)
+            else:
+                # Use the first subject variable if available, otherwise create one
+                if self.subject_vars:
+                    subject_var = list(self.subject_vars.values())[0]
+                else:
+                    subject_var = self._get_subject_var("_default")
 
             if attr.name.lower() == 'subject':
                 # Filter on subject itself
@@ -192,22 +200,60 @@ class WhereConverter:
                     patterns.append(type_pattern)
 
             else:
-                # Create pattern for the attribute
-                object_var = f"?{attr.name}_value"
-                predicate_uri = self._get_predicate_uri(attr.name)
+                # Check if it's an expression (starts with parenthesis)
+                if attr.name.startswith('('):
+                    # This is an expression - convert it using ExpressionBuilder
+                    from ..core.converter import ExpressionBuilder
+                    builder = ExpressionBuilder()
 
-                pattern = Triple(
-                    subject=subject_var,
-                    predicate=predicate_uri,
-                    object=object_var
-                )
-                patterns.append(pattern)
+                    # Remove outer parentheses and parse the expression
+                    expr_content = attr.name.strip('() ')
 
-                # Add FILTER condition
-                filter_str = self._build_filter_expression(
-                    object_var, cond.operator, cond.value
-                )
-                filters.append(filter_str)
+                    # Extract column names from the expression first
+                    import re
+                    column_names = re.findall(r'\b([a-zA-Z_]\w*)\b', expr_content)
+
+                    # Create variable mappings for the expression
+                    var_mappings = {}
+                    for col_name in column_names:
+                        if col_name not in ['AND', 'OR', 'NOT']:  # Skip SQL keywords
+                            var_mappings[col_name] = f"?{col_name}"
+
+                            # Check if pattern already exists
+                            col_var = f"?{col_name}"
+                            if not any(p.object == col_var for p in patterns):
+                                predicate_uri = self._get_predicate_uri(col_name)
+                                pattern = Triple(
+                                    subject=subject_var,
+                                    predicate=predicate_uri,
+                                    object=col_var
+                                )
+                                patterns.append(pattern)
+
+                    # Now parse and convert the expression
+                    expr_tree = builder.parse_expression(expr_content)
+                    sparql_expr = builder.to_sparql_expression(expr_tree, var_mappings)
+
+                    # Build FILTER with the expression
+                    filter_str = f"{sparql_expr} {cond.operator} {cond.value}"
+                    filters.append(filter_str)
+                else:
+                    # Regular attribute
+                    object_var = f"?{attr.name}"
+                    predicate_uri = self._get_predicate_uri(attr.name)
+
+                    pattern = Triple(
+                        subject=subject_var,
+                        predicate=predicate_uri,
+                        object=object_var
+                    )
+                    patterns.append(pattern)
+
+                    # Add FILTER condition
+                    filter_str = self._build_filter_expression(
+                        object_var, cond.operator, cond.value
+                    )
+                    filters.append(filter_str)
 
         return patterns, filters
 
@@ -257,7 +303,7 @@ class WhereConverter:
         else:
             return f"<http://example.org/types/{relation_name.title()}>"
 
-    def _build_filter_expression(self, variable: str, operator: str, value: any) -> str:
+    def _build_filter_expression(self, variable: str, operator: str, value: Any) -> str:
         """
         Build SPARQL FILTER expression
 
@@ -297,7 +343,10 @@ class WhereConverter:
 
         if sparql_op == 'regex':
             # Convert SQL LIKE to SPARQL regex
-            pattern = value.replace('%', '.*').replace('_', '.')
-            return f'regex({variable}, "{pattern}", "i")'
+            if value is not None:
+                pattern = str(value).replace('%', '.*').replace('_', '.')
+                return f'regex({variable}, "{pattern}", "i")'
+            else:
+                return f'regex({variable}, ".*", "i")'
         else:
             return f"{variable} {sparql_op} {value_str}"

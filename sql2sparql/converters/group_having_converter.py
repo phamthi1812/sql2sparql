@@ -28,7 +28,7 @@ class GroupHavingConverter:
     def convert_group_by(
         self,
         group_by_attributes: List[Attribute],
-        existing_patterns: List[Triple] = None
+        existing_patterns: Optional[List[Triple]] = None
     ) -> Tuple[List[str], List[Triple]]:
         """
         Convert SQL GROUP BY clause to SPARQL GROUP BY
@@ -72,7 +72,7 @@ class GroupHavingConverter:
 
                 # Check if pattern already exists in existing patterns
                 predicate_uri = self._get_predicate_uri(attr.name)
-                if not self._pattern_exists(existing_patterns, subject_var, predicate_uri):
+                if not self._pattern_exists(existing_patterns or [], subject_var, predicate_uri):
                     # Create new pattern for this attribute
                     pattern = Triple(
                         subject=subject_var,
@@ -82,9 +82,10 @@ class GroupHavingConverter:
                     additional_patterns.append(pattern)
                 else:
                     # Find the existing object variable
-                    object_var = self._find_object_var(
-                        existing_patterns, subject_var, predicate_uri
+                    found_object_var = self._find_object_var(
+                        existing_patterns or [], subject_var, predicate_uri
                     )
+                    object_var = found_object_var if found_object_var else f"?{attr.name}_group"
 
                 group_vars.append(object_var)
 
@@ -96,7 +97,7 @@ class GroupHavingConverter:
     def convert_having(
         self,
         having_conditions: List[WhereCondition],
-        existing_patterns: List[Triple] = None
+        existing_patterns: Optional[List[Triple]] = None
     ) -> List[str]:
         """
         Convert SQL HAVING clause to SPARQL HAVING
@@ -120,7 +121,7 @@ class GroupHavingConverter:
             subject_var = self._get_subject_var(attr.relation)
 
             # Build aggregate expression
-            if attr.is_aggregate():
+            if attr.is_aggregate() and attr.aggregate:
                 if attr.name.lower() == 'subject':
                     # Aggregate on subject
                     agg_expr = self._build_aggregate_expr(
@@ -130,16 +131,19 @@ class GroupHavingConverter:
                     # Find or create object variable for this attribute
                     predicate_uri = self._get_predicate_uri(attr.name)
                     object_var = self._find_object_var(
-                        existing_patterns, subject_var, predicate_uri
+                        existing_patterns or [], subject_var, predicate_uri
                     )
 
                     if not object_var:
                         # Create new variable
                         object_var = f"?{attr.name}_having"
 
-                    agg_expr = self._build_aggregate_expr(
-                        object_var, attr.aggregate
-                    )
+                    if attr.aggregate:
+                        agg_expr = self._build_aggregate_expr(
+                            object_var, attr.aggregate
+                        )
+                    else:
+                        continue
 
                 # Build HAVING condition
                 having_expr = f"{agg_expr} {cond.operator} {cond.value}"

@@ -3,9 +3,9 @@ SQL Parser - Parses SQL queries and extracts components for conversion
 """
 import re
 import sqlparse
-from typing import List, Dict, Any, Optional, Tuple
-from sqlparse.sql import Token, TokenList, Identifier, IdentifierList, Where, Comparison, Function
-from sqlparse.tokens import Keyword, DML
+from typing import List
+from sqlparse.sql import TokenList
+from sqlparse.tokens import DML
 
 from ..core.models import (
     SQLQuery, QueryType, Attribute, JoinCondition,
@@ -100,12 +100,20 @@ class SQLParser:
                 idx = self._parse_from_clause(tokens, idx + 1, query)
             elif keyword == 'WHERE':
                 idx = self._parse_where_clause(tokens, idx + 1, query)
-            elif keyword == 'GROUP' and idx + 1 < len(tokens) and str(tokens[idx + 1]).upper() == 'BY':
-                idx = self._parse_group_by_clause(tokens, idx + 2, query)
+            elif keyword == 'GROUP BY' or (keyword == 'GROUP' and idx + 1 < len(tokens) and str(tokens[idx + 1]).upper() == 'BY'):
+                # Handle both 'GROUP BY' as single token or 'GROUP' followed by 'BY'
+                if keyword == 'GROUP BY':
+                    idx = self._parse_group_by_clause(tokens, idx + 1, query)
+                else:
+                    idx = self._parse_group_by_clause(tokens, idx + 2, query)
             elif keyword == 'HAVING':
                 idx = self._parse_having_clause(tokens, idx + 1, query)
-            elif keyword == 'ORDER' and idx + 1 < len(tokens) and str(tokens[idx + 1]).upper() == 'BY':
-                idx = self._parse_order_by_clause(tokens, idx + 2, query)
+            elif keyword == 'ORDER BY' or (keyword == 'ORDER' and idx + 1 < len(tokens) and str(tokens[idx + 1]).upper() == 'BY'):
+                # Handle both 'ORDER BY' as single token or 'ORDER' followed by 'BY'
+                if keyword == 'ORDER BY':
+                    idx = self._parse_order_by_clause(tokens, idx + 1, query)
+                else:
+                    idx = self._parse_order_by_clause(tokens, idx + 2, query)
             elif keyword == 'LIMIT':
                 idx = self._parse_limit_clause(tokens, idx + 1, query)
             elif keyword == 'OFFSET':
@@ -121,20 +129,29 @@ class SQLParser:
     def _parse_select_clause(self, tokens: List, start_idx: int, query: SQLQuery) -> int:
         """Parse SELECT clause and extract attributes"""
         idx = start_idx
-        current_attr = []
+        current_attr: List[str] = []
+        paren_depth = 0
 
         while idx < len(tokens):
             token = tokens[idx]
             token_str = str(token).strip()
 
-            # Check for end of SELECT clause
-            if token_str.upper() in ['FROM', 'WHERE', 'GROUP', 'ORDER', 'LIMIT', ';']:
+            # Check for end of SELECT clause - only if it's actually a keyword in this context
+            # Don't end on "ORDER" if it's being used as a table/column name
+            if token_str.upper() == 'FROM' and paren_depth == 0:
                 if current_attr:
                     self._add_attribute(current_attr, query)
                 return idx
 
-            # Handle comma separator
-            if token_str == ',':
+            # Track parentheses depth
+            if token_str == '(':
+                paren_depth += 1
+                current_attr.append(token_str)
+            elif token_str == ')':
+                paren_depth -= 1
+                current_attr.append(token_str)
+            # Handle comma separator only outside of parentheses
+            elif token_str == ',' and paren_depth == 0:
                 if current_attr:
                     self._add_attribute(current_attr, query)
                     current_attr = []
@@ -152,15 +169,22 @@ class SQLParser:
         """Add parsed attribute to query"""
         attr_str = ' '.join(attr_parts)
 
+        # Handle alias (AS keyword) first
+        alias = None
+        if ' AS ' in attr_str.upper() or ' as ' in attr_str:
+            parts = re.split(r'\s+[Aa][Ss]\s+', attr_str)
+            attr_str = parts[0].strip()
+            alias = parts[1].strip() if len(parts) > 1 else None
+
         # Check for aggregate function
         aggregate = None
         for agg_name, agg_enum in self.aggregate_map.items():
-            if attr_str.upper().startswith(agg_name):
+            pattern = rf'{agg_name}\s*\(\s*([^)]+)\s*\)'
+            match = re.match(pattern, attr_str, re.IGNORECASE)
+            if match:
                 aggregate = agg_enum
-                # Extract attribute from aggregate function
-                match = re.match(rf'{agg_name}\s*\(\s*([^)]+)\s*\)', attr_str, re.IGNORECASE)
-                if match:
-                    attr_str = match.group(1)
+                # Extract the column from within the aggregate function
+                attr_str = match.group(1).strip()
                 break
 
         # Parse table.attribute format
@@ -173,13 +197,6 @@ class SQLParser:
             relation = ""
             name = attr_str.strip()
 
-        # Handle alias (AS keyword)
-        alias = None
-        if ' AS ' in name.upper():
-            parts = re.split(r'\s+AS\s+', name, flags=re.IGNORECASE)
-            name = parts[0].strip()
-            alias = parts[1].strip()
-
         attribute = Attribute(
             relation=relation,
             name=name,
@@ -191,14 +208,22 @@ class SQLParser:
     def _parse_from_clause(self, tokens: List, start_idx: int, query: SQLQuery) -> int:
         """Parse FROM clause and extract tables"""
         idx = start_idx
-        current_table = []
+        current_table: List[str] = []
 
         while idx < len(tokens):
             token = tokens[idx]
             token_str = str(token).strip()
 
-            # Check for end of FROM clause
-            if token_str.upper() in ['WHERE', 'GROUP', 'HAVING', 'ORDER', 'LIMIT', ';']:
+            # Check for end of FROM clause - only check actual clause keywords
+            # "ORDER" alone might be a table name, but "ORDER BY" is definitely a clause
+            if token_str.upper() == 'WHERE' or \
+               token_str.upper() == 'GROUP' or \
+               token_str.upper() == 'GROUP BY' or \
+               token_str.upper() == 'HAVING' or \
+               (token_str.upper() == 'ORDER' and idx + 1 < len(tokens) and str(tokens[idx + 1]).strip().upper() == 'BY') or \
+               token_str.upper() == 'ORDER BY' or \
+               token_str.upper() == 'LIMIT' or \
+               token_str == ';':
                 if current_table:
                     table_name = ' '.join(current_table).strip()
                     if table_name:
@@ -227,25 +252,37 @@ class SQLParser:
     def _parse_where_clause(self, tokens: List, start_idx: int, query: SQLQuery) -> int:
         """Parse WHERE clause and extract conditions"""
         idx = start_idx
-        condition_parts = []
+        condition_str = ""
 
         while idx < len(tokens):
             token = tokens[idx]
             token_str = str(token).strip()
 
-            # Check for end of WHERE clause
-            if token_str.upper() in ['GROUP', 'HAVING', 'ORDER', 'LIMIT', 'UNION', 'INTERSECT', 'EXCEPT', ';']:
-                if condition_parts:
-                    self._parse_conditions(' '.join(condition_parts), query)
+            # Check for end of WHERE clause - handle compound keywords
+            # "ORDER" alone might be part of the condition, but "ORDER BY" is definitely a clause
+            if token_str.upper() in ['GROUP', 'GROUP BY', 'HAVING', 'LIMIT', 'UNION', 'INTERSECT', 'EXCEPT'] or \
+               (token_str.upper() == 'ORDER' and idx + 1 < len(tokens) and str(tokens[idx + 1]).strip().upper() == 'BY') or \
+               token_str.upper() == 'ORDER BY' or \
+               token_str == ';':
+                if condition_str:
+                    self._parse_conditions(condition_str.strip(), query)
                 return idx
 
             if not token.is_whitespace:
-                condition_parts.append(token_str)
+                # Special handling for dots - don't add spaces around them
+                if token_str == '.':
+                    condition_str = condition_str.rstrip() + '.'
+                elif idx > 0 and condition_str and condition_str[-1] == '.':
+                    condition_str += token_str
+                else:
+                    if condition_str and not condition_str[-1] in '(,':
+                        condition_str += ' '
+                    condition_str += token_str
 
             idx += 1
 
-        if condition_parts:
-            self._parse_conditions(' '.join(condition_parts), query)
+        if condition_str:
+            self._parse_conditions(condition_str.strip(), query)
 
         return idx
 
@@ -281,46 +318,68 @@ class SQLParser:
                 query.join_conditions.append(join_cond)
             else:
                 # This is a regular WHERE condition
-                # Parse comparison: attribute operator value
-                comp_match = re.match(
-                    r'([\w.]+)\s*([=<>!]+)\s*(.+)',
+                # First check for expression-based conditions (e.g., (price * stock) > 1000)
+                expr_match = re.match(
+                    r'(\([^)]+\))\s*([=<>!]+)\s*(.+)',
                     cond,
                     re.IGNORECASE
                 )
 
-                if comp_match:
-                    attr_str = comp_match.group(1)
-                    operator = comp_match.group(2)
-                    value = comp_match.group(3).strip().strip("'\"")
+                if expr_match:
+                    # This is an expression condition
+                    expr_str = expr_match.group(1)  # e.g., "(price * stock)"
+                    operator = expr_match.group(2)
+                    value = expr_match.group(3).strip().strip("'\"").rstrip(';')
 
-                    # Parse attribute
-                    if '.' in attr_str:
-                        parts = attr_str.split('.')
-                        relation = parts[0]
-                        name = parts[1]
-                    else:
-                        relation = ""
-                        name = attr_str
-
+                    # Store as a special WHERE condition with expression
                     where_cond = WhereCondition(
-                        attribute=Attribute(relation=relation, name=name),
+                        attribute=Attribute(relation="", name=expr_str),
                         operator=operator,
                         value=value,
                         is_join=False
                     )
                     query.where_conditions.append(where_cond)
+                else:
+                    # Parse regular comparison: attribute operator value (including LIKE, IN, BETWEEN)
+                    comp_match = re.match(
+                        r'([\w.]+)\s*([=<>!]+|LIKE|IN|BETWEEN|NOT\s+IN|NOT\s+BETWEEN)\s*(.+)',
+                        cond,
+                        re.IGNORECASE
+                    )
+
+                    if comp_match:
+                        attr_str = comp_match.group(1)
+                        operator = comp_match.group(2)
+                        value = comp_match.group(3).strip().strip("'\"").rstrip(';')
+
+                        # Parse attribute
+                        if '.' in attr_str:
+                            parts = attr_str.split('.')
+                            relation = parts[0]
+                            name = parts[1]
+                        else:
+                            relation = ""
+                            name = attr_str
+
+                        where_cond = WhereCondition(
+                            attribute=Attribute(relation=relation, name=name),
+                            operator=operator,
+                            value=value,
+                            is_join=False
+                        )
+                        query.where_conditions.append(where_cond)
 
     def _parse_group_by_clause(self, tokens: List, start_idx: int, query: SQLQuery) -> int:
         """Parse GROUP BY clause"""
         idx = start_idx
-        current_attr = []
+        current_attr: List[str] = []
 
         while idx < len(tokens):
             token = tokens[idx]
             token_str = str(token).strip()
 
-            # Check for end of GROUP BY clause
-            if token_str.upper() in ['HAVING', 'ORDER', 'LIMIT', ';']:
+            # Check for end of GROUP BY clause - handle compound keywords
+            if token_str.upper() in ['HAVING', 'ORDER', 'ORDER BY', 'LIMIT', ';']:
                 if current_attr:
                     self._add_group_by_attribute(current_attr, query)
                 return idx
@@ -358,7 +417,7 @@ class SQLParser:
     def _parse_having_clause(self, tokens: List, start_idx: int, query: SQLQuery) -> int:
         """Parse HAVING clause"""
         idx = start_idx
-        condition_parts = []
+        condition_parts: List[str] = []
 
         while idx < len(tokens):
             token = tokens[idx]
@@ -422,7 +481,7 @@ class SQLParser:
     def _parse_order_by_clause(self, tokens: List, start_idx: int, query: SQLQuery) -> int:
         """Parse ORDER BY clause"""
         idx = start_idx
-        current_attr = []
+        current_attr: List[str] = []
         direction = "ASC"
 
         while idx < len(tokens):
@@ -518,7 +577,8 @@ class SQLParser:
 
         if match:
             query.delete_table = match.group(1)
-            query.from_tables = [query.delete_table]
+            if query.delete_table:
+                query.from_tables = [query.delete_table]
 
             # Parse WHERE conditions if present
             if match.group(2):
