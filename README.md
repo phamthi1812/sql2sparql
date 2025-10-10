@@ -30,7 +30,7 @@ This is an original implementation inspired by algorithms described in the acade
 
 ```bash
 # Install from source
-git clone https://github.com/yourusername/sql2sparql
+git clone https://github.com/phamthi1812/sql2sparql
 cd sql2sparql
 pip install -e .
 
@@ -38,7 +38,17 @@ pip install -e .
 pip install sql2sparql
 ```
 
+### Requirements
+
+- Python 3.8+
+- Java 11+ (for Apache Jena Fuseki, optional)
+- SPARQL endpoint (see [SPARQL_ENDPOINT_SETUP.md](SPARQL_ENDPOINT_SETUP.md))
+
 ## Quick Start
+
+### SPARQL Endpoint Setup
+
+For testing with real datasets, you'll need a SPARQL endpoint. See [SPARQL_ENDPOINT_SETUP.md](SPARQL_ENDPOINT_SETUP.md) for detailed instructions.
 
 ### Command Line Usage
 
@@ -186,6 +196,37 @@ executor = SPARQLExecutor(
     store_type=StoreType.BLAZEGRAPH,
     endpoint="http://localhost:9999/blazegraph/sparql"
 )
+```
+
+## Testing
+
+### Unit Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/test_converter.py
+
+# Run with coverage
+pytest --cov=sql2sparql
+```
+
+### Integration Tests with Northwind Dataset
+
+```bash
+# Set up SPARQL endpoint first (see SPARQL_ENDPOINT_SETUP.md)
+cd datasets
+
+# Test basic functionality
+python test_northwind.py
+
+# Test GROUP BY queries
+python test_simple_groupby.py
+
+# Test complex aggregates
+python test_complex_aggregates.py
 ```
 
 ## References
