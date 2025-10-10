@@ -124,8 +124,8 @@ class SelectConverter:
         """
         if self.schema_mapper:
             # Use schema mapper if available
-            # In production, this would look up the actual predicate URI
-            return f"<http://example.org/ontology/{attribute_name}>"
+            predicate_uri = self.schema_mapper.get_column_property(attribute_name)
+            return f"<{predicate_uri}>"
         else:
             # Default namespace
             return f"<http://example.org/ontology/{attribute_name}>"
@@ -142,7 +142,8 @@ class SelectConverter:
         """
         if self.schema_mapper:
             # Use schema mapper if available
-            return f"<http://example.org/types/{relation_name.title()}>"
+            type_uri = self.schema_mapper.get_table_class(relation_name)
+            return f"<{type_uri}>"
         else:
             # Default type namespace
             return f"<http://example.org/types/{relation_name.title()}>"

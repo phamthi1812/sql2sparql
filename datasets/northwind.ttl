@@ -1,0 +1,592 @@
+@prefix : <http://northwind.example.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ont: <http://northwind.example.org/ontology/> .
+@prefix types: <http://northwind.example.org/types/> .
+
+# Ontology definitions
+ont:Customer a rdfs:Class .
+ont:Product a rdfs:Class .
+ont:Order a rdfs:Class .
+ont:OrderDetail a rdfs:Class .
+ont:Category a rdfs:Class .
+ont:Supplier a rdfs:Class .
+ont:Employee a rdfs:Class .
+ont:Shipper a rdfs:Class .
+
+ont:customerID a rdf:Property ;
+    rdfs:domain ont:Customer ;
+    rdfs:range xsd:string .
+ont:companyName a rdf:Property ;
+    rdfs:domain types:BusinessEntity ;
+    rdfs:range xsd:string .
+ont:contactName a rdf:Property ;
+    rdfs:domain types:BusinessEntity ;
+    rdfs:range xsd:string .
+ont:contactTitle a rdf:Property ;
+    rdfs:domain types:BusinessEntity ;
+    rdfs:range xsd:string .
+ont:address a rdf:Property ;
+    rdfs:domain types:BusinessEntity ;
+    rdfs:range xsd:string .
+ont:city a rdf:Property ;
+    rdfs:domain types:BusinessEntity ;
+    rdfs:range xsd:string .
+ont:region a rdf:Property ;
+    rdfs:domain types:BusinessEntity ;
+    rdfs:range xsd:string .
+ont:postalCode a rdf:Property ;
+    rdfs:domain types:BusinessEntity ;
+    rdfs:range xsd:string .
+ont:country a rdf:Property ;
+    rdfs:domain types:BusinessEntity ;
+    rdfs:range xsd:string .
+ont:phone a rdf:Property ;
+    rdfs:domain types:BusinessEntity ;
+    rdfs:range xsd:string .
+ont:fax a rdf:Property ;
+    rdfs:domain types:BusinessEntity ;
+    rdfs:range xsd:string .
+
+ont:productID a rdf:Property ;
+    rdfs:domain ont:Product ;
+    rdfs:range xsd:string .
+ont:productName a rdf:Property ;
+    rdfs:domain ont:Product ;
+    rdfs:range xsd:string .
+ont:quantityPerUnit a rdf:Property ;
+    rdfs:domain ont:Product ;
+    rdfs:range xsd:string .
+ont:unitPrice a rdf:Property ;
+    rdfs:domain ont:Product ;
+    rdfs:range xsd:decimal .
+ont:unitsInStock a rdf:Property ;
+    rdfs:domain ont:Product ;
+    rdfs:range xsd:integer .
+ont:unitsOnOrder a rdf:Property ;
+    rdfs:domain ont:Product ;
+    rdfs:range xsd:integer .
+ont:reorderLevel a rdf:Property ;
+    rdfs:domain ont:Product ;
+    rdfs:range xsd:integer .
+ont:discontinued a rdf:Property ;
+    rdfs:domain ont:Product ;
+    rdfs:range xsd:boolean .
+
+ont:categoryID a rdf:Property ;
+    rdfs:domain ont:Category ;
+    rdfs:range xsd:string .
+ont:categoryName a rdf:Property ;
+    rdfs:domain ont:Category ;
+    rdfs:range xsd:string .
+ont:description a rdf:Property ;
+    rdfs:domain ont:Category ;
+    rdfs:range xsd:string .
+
+ont:supplierID a rdf:Property ;
+    rdfs:domain ont:Supplier ;
+    rdfs:range xsd:string .
+ont:homePage a rdf:Property ;
+    rdfs:domain ont:Supplier ;
+    rdfs:range xsd:string .
+
+ont:orderID a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:string .
+ont:orderDate a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:date .
+ont:requiredDate a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:date .
+ont:shippedDate a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:date .
+ont:freight a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:decimal .
+ont:shipName a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:string .
+ont:shipAddress a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:string .
+ont:shipCity a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:string .
+ont:shipRegion a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:string .
+ont:shipPostalCode a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:string .
+ont:shipCountry a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range xsd:string .
+
+ont:unitPrice a rdf:Property ;
+    rdfs:domain ont:OrderDetail ;
+    rdfs:range xsd:decimal .
+ont:quantity a rdf:Property ;
+    rdfs:domain ont:OrderDetail ;
+    rdfs:range xsd:integer .
+ont:discount a rdf:Property ;
+    rdfs:domain ont:OrderDetail ;
+    rdfs:range xsd:decimal .
+
+ont:employeeID a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:lastName a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:firstName a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:title a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:titleOfCourtesy a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:birthDate a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:date .
+ont:hireDate a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:date .
+ont:address a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:city a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:region a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:postalCode a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:country a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:homePhone a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:extension a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:photo a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:notes a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:reportsTo a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+ont:photoPath a rdf:Property ;
+    rdfs:domain ont:Employee ;
+    rdfs:range xsd:string .
+
+ont:shipperID a rdf:Property ;
+    rdfs:domain ont:Shipper ;
+    rdfs:range xsd:string .
+ont:phone a rdf:Property ;
+    rdfs:domain ont:Shipper ;
+    rdfs:range xsd:string .
+
+# Relationship properties
+ont:customer a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range ont:Customer .
+ont:employee a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range ont:Employee .
+ont:shipVia a rdf:Property ;
+    rdfs:domain ont:Order ;
+    rdfs:range ont:Shipper .
+ont:order a rdf:Property ;
+    rdfs:domain ont:OrderDetail ;
+    rdfs:range ont:Order .
+ont:product a rdf:Property ;
+    rdfs:domain ont:OrderDetail ;
+    rdfs:range ont:Product .
+ont:category a rdf:Property ;
+    rdfs:domain ont:Product ;
+    rdfs:range ont:Category .
+ont:supplier a rdf:Property ;
+    rdfs:domain ont:Product ;
+    rdfs:range ont:Supplier .
+
+types:BusinessEntity a rdfs:Class .
+
+# Categories
+:category1 a ont:Category ;
+    ont:categoryID "1" ;
+    ont:categoryName "Beverages" ;
+    ont:description "Soft drinks, coffees, teas, beers, and ales" .
+
+:category2 a ont:Category ;
+    ont:categoryID "2" ;
+    ont:categoryName "Condiments" ;
+    ont:description "Sweet and savory sauces, relishes, spreads, and seasonings" .
+
+:category3 a ont:Category ;
+    ont:categoryID "3" ;
+    ont:categoryName "Confections" ;
+    ont:description "Desserts, candies, and sweet breads" .
+
+:category4 a ont:Category ;
+    ont:categoryID "4" ;
+    ont:categoryName "Dairy Products" ;
+    ont:description "Cheeses" .
+
+:category5 a ont:Category ;
+    ont:categoryID "5" ;
+    ont:categoryName "Grains/Cereals" ;
+    ont:description "Breads, crackers, pasta, and cereal" .
+
+:category6 a ont:Category ;
+    ont:categoryID "6" ;
+    ont:categoryName "Meat/Poultry" ;
+    ont:description "Prepared meats" .
+
+:category7 a ont:Category ;
+    ont:categoryID "7" ;
+    ont:categoryName "Produce" ;
+    ont:description "Dried fruit and bean curd" .
+
+:category8 a ont:Category ;
+    ont:categoryID "8" ;
+    ont:categoryName "Seafood" ;
+    ont:description "Seaweed and fish" .
+
+# Customers
+:customer1 a ont:Customer ;
+    ont:customerID "ALFKI" ;
+    ont:companyName "Alfreds Futterkiste" ;
+    ont:contactName "Maria Anders" ;
+    ont:contactTitle "Sales Representative" ;
+    ont:address "Obere Str. 57" ;
+    ont:city "Berlin" ;
+    ont:postalCode "12209" ;
+    ont:country "Germany" ;
+    ont:phone "030-0074321" ;
+    ont:fax "030-0076545" .
+
+:customer2 a ont:Customer ;
+    ont:customerID "ANATR" ;
+    ont:companyName "Ana Trujillo Emparedados y helados" ;
+    ont:contactName "Ana Trujillo" ;
+    ont:contactTitle "Owner" ;
+    ont:address "Avda. de la Constitución 2222" ;
+    ont:city "México D.F." ;
+    ont:postalCode "05021" ;
+    ont:country "Mexico" ;
+    ont:phone "(5) 555-4729" ;
+    ont:fax "(5) 555-3745" .
+
+:customer3 a ont:Customer ;
+    ont:customerID "ANTON" ;
+    ont:companyName "Antonio Moreno Taquería" ;
+    ont:contactName "Antonio Moreno" ;
+    ont:contactTitle "Owner" ;
+    ont:address "Mataderos  2312" ;
+    ont:city "México D.F." ;
+    ont:postalCode "05023" ;
+    ont:country "Mexico" ;
+    ont:phone "(5) 555-3932" .
+
+:customer4 a ont:Customer ;
+    ont:customerID "AROUT" ;
+    ont:companyName "Around the Horn" ;
+    ont:contactName "Thomas Hardy" ;
+    ont:contactTitle "Sales Representative" ;
+    ont:address "120 Hanover Sq." ;
+    ont:city "London" ;
+    ont:postalCode "WA1 1DP" ;
+    ont:country "UK" ;
+    ont:phone "(171) 555-7788" ;
+    ont:fax "(171) 555-6750" .
+
+:customer5 a ont:Customer ;
+    ont:customerID "BERGS" ;
+    ont:companyName "Berglunds snabbköp" ;
+    ont:contactName "Christina Berglund" ;
+    ont:contactTitle "Order Administrator" ;
+    ont:address "Berguvsvägen  8" ;
+    ont:city "Luleå" ;
+    ont:postalCode "S-958 22" ;
+    ont:country "Sweden" ;
+    ont:phone "0921-12 34 65" ;
+    ont:fax "0921-12 34 67" .
+
+# Employees
+:employee1 a ont:Employee ;
+    ont:employeeID "1" ;
+    ont:lastName "Davolio" ;
+    ont:firstName "Nancy" ;
+    ont:title "Sales Representative" ;
+    ont:titleOfCourtesy "Ms." ;
+    ont:birthDate "1968-12-08"^^xsd:date ;
+    ont:hireDate "1992-05-01"^^xsd:date ;
+    ont:address "507 - 20th Ave. E.\nApt. 2A" ;
+    ont:city "Seattle" ;
+    ont:region "WA" ;
+    ont:postalCode "98122" ;
+    ont:country "USA" ;
+    ont:homePhone "(206) 555-9857" ;
+    ont:extension "5467" ;
+    ont:photo "EmpID1.pic" ;
+    ont:notes "Education includes a BA in psychology from Colorado State University. She also completed 'The Art of the Cold Call.' Nancy is a member of Toastmasters International." ;
+    ont:reportsTo "2" ;
+    ont:photoPath "http://accweb/emmployees/davolio.bmp" .
+
+:employee2 a ont:Employee ;
+    ont:employeeID "2" ;
+    ont:lastName "Fuller" ;
+    ont:firstName "Andrew" ;
+    ont:title "Vice President, Sales" ;
+    ont:titleOfCourtesy "Dr." ;
+    ont:birthDate "1952-02-19"^^xsd:date ;
+    ont:hireDate "1992-08-14"^^xsd:date ;
+    ont:address "908 W. Capital Way" ;
+    ont:city "Tacoma" ;
+    ont:region "WA" ;
+    ont:postalCode "98401" ;
+    ont:country "USA" ;
+    ont:homePhone "(206) 555-9482" ;
+    ont:extension "3457" ;
+    ont:photo "EmpID2.pic" ;
+    ont:notes "Andrew received his BTS commercial and a Ph.D. in international marketing from the University of Dallas. He is fluent in French and Italian and reads German. He joined the company as a sales representative, was promoted to sales manager and was then named vice president of sales." ;
+    ont:photoPath "http://accweb/emmployees/fuller.bmp" .
+
+:employee3 a ont:Employee ;
+    ont:employeeID "3" ;
+    ont:lastName "Leverling" ;
+    ont:firstName "Janet" ;
+    ont:title "Sales Representative" ;
+    ont:titleOfCourtesy "Ms." ;
+    ont:birthDate "1963-08-30"^^xsd:date ;
+    ont:hireDate "1992-04-01"^^xsd:date ;
+    ont:address "722 Moss Bay Blvd." ;
+    ont:city "Kirkland" ;
+    ont:region "WA" ;
+    ont:postalCode "98033" ;
+    ont:country "USA" ;
+    ont:homePhone "(206) 555-3412" ;
+    ont:extension "3355" ;
+    ont:photo "EmpID3.pic" ;
+    ont:notes "Janet has a BS degree in chemistry from Boston College. She has also completed a certificate program in food retailing management. Janet was hired as a sales associate and was promoted to sales representative." ;
+    ont:reportsTo "2" ;
+    ont:photoPath "http://accweb/emmployees/leverling.bmp" .
+
+# Products
+:product1 a ont:Product ;
+    ont:productID "1" ;
+    ont:productName "Chai" ;
+    ont:supplier :supplier1 ;
+    ont:category :category1 ;
+    ont:quantityPerUnit "10 boxes x 20 bags" ;
+    ont:unitPrice "18.00"^^xsd:decimal ;
+    ont:unitsInStock 39 ;
+    ont:unitsOnOrder 0 ;
+    ont:reorderLevel 10 ;
+    ont:discontinued false .
+
+:product2 a ont:Product ;
+    ont:productID "2" ;
+    ont:productName "Chang" ;
+    ont:supplier :supplier1 ;
+    ont:category :category1 ;
+    ont:quantityPerUnit "24 - 12 oz bottles" ;
+    ont:unitPrice "19.00"^^xsd:decimal ;
+    ont:unitsInStock 17 ;
+    ont:unitsOnOrder 40 ;
+    ont:reorderLevel 25 ;
+    ont:discontinued false .
+
+:product3 a ont:Product ;
+    ont:productID "3" ;
+    ont:productName "Aniseed Syrup" ;
+    ont:supplier :supplier1 ;
+    ont:category :category2 ;
+    ont:quantityPerUnit "12 - 550 ml bottles" ;
+    ont:unitPrice "10.00"^^xsd:decimal ;
+    ont:unitsInStock 13 ;
+    ont:unitsOnOrder 70 ;
+    ont:reorderLevel 25 ;
+    ont:discontinued false .
+
+:product4 a ont:Product ;
+    ont:productID "4" ;
+    ont:productName "Chef Anton's Cajun Seasoning" ;
+    ont:supplier :supplier2 ;
+    ont:category :category2 ;
+    ont:quantityPerUnit "48 - 6 oz jars" ;
+    ont:unitPrice "22.00"^^xsd:decimal ;
+    ont:unitsInStock 53 ;
+    ont:unitsOnOrder 0 ;
+    ont:reorderLevel 0 ;
+    ont:discontinued false .
+
+:product5 a ont:Product ;
+    ont:productID "5" ;
+    ont:productName "Chef Anton's Gumbo Mix" ;
+    ont:supplier :supplier2 ;
+    ont:category :category2 ;
+    ont:quantityPerUnit "36 boxes" ;
+    ont:unitPrice "21.35"^^xsd:decimal ;
+    ont:unitsInStock 0 ;
+    ont:unitsOnOrder 0 ;
+    ont:reorderLevel 0 ;
+    ont:discontinued true .
+
+# Suppliers
+:supplier1 a ont:Supplier ;
+    ont:supplierID "1" ;
+    ont:companyName "Exotic Liquids" ;
+    ont:contactName "Charlotte Cooper" ;
+    ont:contactTitle "Purchasing Manager" ;
+    ont:address "49 Gilbert St." ;
+    ont:city "London" ;
+    ont:postalCode "EC1 4SD" ;
+    ont:country "UK" ;
+    ont:phone "(171) 555-2222" ;
+    ont:fax "(171) 555-2223" ;
+    ont:homePage "http://www.microsoft.com/Access/SampleApps" .
+
+:supplier2 a ont:Supplier ;
+    ont:supplierID "2" ;
+    ont:companyName "New Orleans Cajun Delights" ;
+    ont:contactName "Shelley Burke" ;
+    ont:contactTitle "Order Administrator" ;
+    ont:address "P.O. Box 78934" ;
+    ont:city "New Orleans" ;
+    ont:region "LA" ;
+    ont:postalCode "70117" ;
+    ont:country "USA" ;
+    ont:phone "(100) 555-4822" ;
+    ont:fax "(100) 555-4828" .
+
+# Shippers
+:shipper1 a ont:Shipper ;
+    ont:shipperID "1" ;
+    ont:companyName "Speedy Express" ;
+    ont:phone "(503) 555-9831" .
+
+:shipper2 a ont:Shipper ;
+    ont:shipperID "2" ;
+    ont:companyName "United Package" ;
+    ont:phone "(503) 555-3199" .
+
+:shipper3 a ont:Shipper ;
+    ont:shipperID "3" ;
+    ont:companyName "Federal Shipping" ;
+    ont:phone "(503) 555-9931" .
+
+# Orders
+:order1 a ont:Order ;
+    ont:orderID "10248" ;
+    ont:customer :customer1 ;
+    ont:employee :employee1 ;
+    ont:orderDate "1996-07-04"^^xsd:date ;
+    ont:requiredDate "1996-08-01"^^xsd:date ;
+    ont:shippedDate "1996-07-16"^^xsd:date ;
+    ont:shipVia :shipper3 ;
+    ont:freight "32.38"^^xsd:decimal ;
+    ont:shipName "Vins et alcools Chevalier" ;
+    ont:shipAddress "59 rue de l'Abbaye" ;
+    ont:shipCity "Reims" ;
+    ont:shipPostalCode "51100" ;
+    ont:shipCountry "France" .
+
+:order2 a ont:Order ;
+    ont:orderID "10249" ;
+    ont:customer :customer2 ;
+    ont:employee :employee1 ;
+    ont:orderDate "1996-07-05"^^xsd:date ;
+    ont:requiredDate "1996-08-16"^^xsd:date ;
+    ont:shippedDate "1996-07-10"^^xsd:date ;
+    ont:shipVia :shipper1 ;
+    ont:freight "11.61"^^xsd:decimal ;
+    ont:shipName "Toms Spezialitäten" ;
+    ont:shipAddress "Luisenstr. 48" ;
+    ont:shipCity "Münster" ;
+    ont:shipPostalCode "44087" ;
+    ont:shipCountry "Germany" .
+
+:order3 a ont:Order ;
+    ont:orderID "10250" ;
+    ont:customer :customer3 ;
+    ont:employee :employee2 ;
+    ont:orderDate "1996-07-08"^^xsd:date ;
+    ont:requiredDate "1996-08-05"^^xsd:date ;
+    ont:shippedDate "1996-07-12"^^xsd:date ;
+    ont:shipVia :shipper2 ;
+    ont:freight "65.83"^^xsd:decimal ;
+    ont:shipName "Hanari Carnes" ;
+    ont:shipAddress "Rua do Paço, 67" ;
+    ont:shipCity "Rio de Janeiro" ;
+    ont:shipRegion "RJ" ;
+    ont:shipPostalCode "05454-876" ;
+    ont:shipCountry "Brazil" .
+
+# Order Details
+:orderdetail1 a ont:OrderDetail ;
+    ont:order :order1 ;
+    ont:product :product1 ;
+    ont:unitPrice "14.00"^^xsd:decimal ;
+    ont:quantity 12 ;
+    ont:discount "0.00"^^xsd:decimal .
+
+:orderdetail2 a ont:OrderDetail ;
+    ont:order :order1 ;
+    ont:product :product2 ;
+    ont:unitPrice "18.60"^^xsd:decimal ;
+    ont:quantity 10 ;
+    ont:discount "0.00"^^xsd:decimal .
+
+:orderdetail3 a ont:OrderDetail ;
+    ont:order :order1 ;
+    ont:product :product3 ;
+    ont:unitPrice "9.80"^^xsd:decimal ;
+    ont:quantity 5 ;
+    ont:discount "0.00"^^xsd:decimal .
+
+:orderdetail4 a ont:OrderDetail ;
+    ont:order :order2 ;
+    ont:product :product1 ;
+    ont:unitPrice "16.80"^^xsd:decimal ;
+    ont:quantity 9 ;
+    ont:discount "0.00"^^xsd:decimal .
+
+:orderdetail5 a ont:OrderDetail ;
+    ont:order :order2 ;
+    ont:product :product4 ;
+    ont:unitPrice "21.00"^^xsd:decimal ;
+    ont:quantity 40 ;
+    ont:discount "0.00"^^xsd:decimal .
+
+:orderdetail6 a ont:OrderDetail ;
+    ont:order :order3 ;
+    ont:product :product2 ;
+    ont:unitPrice "19.00"^^xsd:decimal ;
+    ont:quantity 10 ;
+    ont:discount "0.00"^^xsd:decimal .
+
+:orderdetail7 a ont:OrderDetail ;
+    ont:order :order3 ;
+    ont:product :product3 ;
+    ont:unitPrice "10.00"^^xsd:decimal ;
+    ont:quantity 35 ;
+    ont:discount "0.15"^^xsd:decimal .
+
+:orderdetail8 a ont:OrderDetail ;
+    ont:order :order3 ;
+    ont:product :product4 ;
+    ont:unitPrice "22.00"^^xsd:decimal ;
+    ont:quantity 15 ;
+    ont:discount "0.15"^^xsd:decimal .
